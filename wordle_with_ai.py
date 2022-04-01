@@ -16,7 +16,34 @@ you_win = big_font.render('You Win!', True, light_green)
 you_lose = big_font.render('You Lose!', True, light_green)
 play_again = big_font.render('Play Again?', True, light_green)
 
-def checkGuess(turns, word, user_guess, window):
+
+used_word_list = []
+word_list = []
+
+def check_word(word, user_guess):
+
+    list = [grey, grey, grey, grey, grey]
+
+    for x in range(0, 5):
+        if user_guess[x] in word:
+            list[x] = yellow
+
+        if word[x] == user_guess[x]:
+            list[x] = green
+
+    return list
+
+def find_correct_word(word, user_guess):
+    result = check_word(word, user_guess)
+    print(user_guess)
+    if result == [grey, grey, grey, grey, grey]: # 새로운 단어 넣어줘야함
+        new_word = word_list[random.randint(0, len(word_list)-1)].upper()[:5]
+        return find_correct_word(word, new_word)
+    else:
+        print("hi");
+
+
+def check_guess(turns, word, user_guess, window):
     render_list = ['', '', '', '', '']
     spacing = 0
     guess_colour_code = [grey ,grey, grey, grey, grey]
@@ -42,9 +69,11 @@ def checkGuess(turns, word, user_guess, window):
 # function main
 def main():
     file = open('./wordList.txt', 'r', encoding = 'utf-8') # read word list 
-    wordList = file.readlines()
-    word = wordList[random.randint(0, len(wordList)-1)].upper()
-
+    global word_list
+    word_list = file.readlines()
+    word = word_list[random.randint(0, len(word_list)-1)].upper()
+    list = find_correct_word('APPLE', 'YYYYY')
+    exit()
     height = 600
     width = 500
 
@@ -72,7 +101,7 @@ def main():
 
         for event in pygame.event.get():
 
-            ai_guess = wordList[random.randint(0, len(wordList)-1)].upper()[:5] # 초기에는 랜덤 단어로 세팅
+            ai_guess = word_list[random.randint(0, len(word_list)-1)].upper()[:5] # 초기에는 랜덤 단어로 세팅
             guess = ai_guess
 
             if event.type == QUIT:
@@ -86,10 +115,11 @@ def main():
                 main()
 
             if len(guess) > 4:
-                win = checkGuess(turns, word, guess, window)
+                win = check_guess(turns, word, guess, window)
                 turns += 1
                 if win == False:
-                    ai_guess = wordList[random.randint(0, len(wordList)-1)].upper()[:5] # 초기에는 랜z덤 단어로 세팅
+                    ai_guess = word_list[random.randint(0, len(word_list)-1)].upper()[:5] # 초기에는 랜z덤 단어로 세팅
+                    # 분석 필요
                     guess = ai_guess
                     time.sleep(2000)
 
