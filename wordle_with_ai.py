@@ -17,7 +17,7 @@ you_lose = big_font.render('You Lose!', True, light_green)
 play_again = big_font.render('Play Again?', True, light_green)
 
 
-used_word_list = []
+win_word_list = []
 word_list = []
 
 def check_word(word, user_guess):
@@ -33,6 +33,77 @@ def check_word(word, user_guess):
 
     return list
 
+def check_condi(type_list, user_word):
+    return_list = []
+    no_letter_list = []
+    contain_letter_list = []
+    correct_letter_list = [None, None, None, None, None]
+
+    for i, type in enumerate(type_list):
+        if type == grey:
+            no_letter_list.append(user_word[i])
+        
+        if type == yellow:
+            contain_letter_list.append(user_word[i])
+
+        if type == green:
+            correct_letter_list[i] = user_word[i]
+
+    contain_letter_list = list(set(contain_letter_list))
+
+    global word_list
+
+    list1 = []
+    list2 = []
+    list3 = []
+
+    print(f'CONTAIN LETTER LIST {contain_letter_list}')
+
+    for x, word in enumerate(word_list):
+        for no_letter in no_letter_list:
+            if no_letter not in word:
+                list1.append(word)
+
+        for contain_letter in contain_letter_list:
+            all_count = len(contain_letter_list)
+            local_count = 0
+
+            if contain_letter in word.upper():
+                local_count += 1
+            
+            if all_count == local_count:
+                list2.append(word)
+        
+        for y, correct_letter in enumerate(correct_letter_list):
+            if correct_letter != None:
+                if word[y].upper() == correct_letter:
+                    list3.append(word)
+
+    set1 = set(list1)
+    set2 = set(list2)
+    set3 = set(list3)
+    print(set1 & set2 & set3)
+    
+
+
+
+    exit()
+
+    # for word in word_list:
+    #     if correct_letter_list != [None, None, None, None, None]:
+    #         count = 0
+    #         for x, correct_letter in enumerate(correct_letter_list):
+    #             if correct_letter == None:
+    #                 continue
+    #             else:
+    #                 if word[x] == correct_letter:
+    #                     count += 1
+    #         print(f'asdasd {count}')
+
+        
+    # return_list.append(user_word)
+    return word_list
+
 def find_correct_word(word, user_guess):
     result = check_word(word, user_guess)
     print(user_guess)
@@ -40,11 +111,13 @@ def find_correct_word(word, user_guess):
         new_word = word_list[random.randint(0, len(word_list)-1)].upper()[:5]
         return find_correct_word(word, new_word)
     else:
-        print("hi");
+        a = check_condi(result, user_guess)[0]
+        print(a)
+
 
 
 def check_guess(turns, word, user_guess, window):
-    render_list = ['', '', '', '', '']
+    render_list = [None, None, None, None, None]
     spacing = 0
     guess_colour_code = [grey ,grey, grey, grey, grey]
 
@@ -72,8 +145,7 @@ def main():
     global word_list
     word_list = file.readlines()
     word = word_list[random.randint(0, len(word_list)-1)].upper()
-    list = find_correct_word('APPLE', 'YYYYY')
-    exit()
+    
     height = 600
     width = 500
 
@@ -83,7 +155,7 @@ def main():
     window = pygame.display.set_mode((width, height))
     window.fill(black)
 
-    guess = ''
+    guess = None
     # 원래라면 문자마다 분석해서 효율적인 단어쓰는 것이 일반적.
 
     print(f'current word is {word}')
@@ -102,8 +174,8 @@ def main():
         for event in pygame.event.get():
 
             ai_guess = word_list[random.randint(0, len(word_list)-1)].upper()[:5] # 초기에는 랜덤 단어로 세팅
-            guess = ai_guess
-
+            guess = find_correct_word(word, ai_guess)
+            
             if event.type == QUIT:
                 pygame.exit()
                 sys.exit()
@@ -117,11 +189,6 @@ def main():
             if len(guess) > 4:
                 win = check_guess(turns, word, guess, window)
                 turns += 1
-                if win == False:
-                    ai_guess = word_list[random.randint(0, len(word_list)-1)].upper()[:5] # 초기에는 랜z덤 단어로 세팅
-                    # 분석 필요
-                    guess = ai_guess
-                    time.sleep(2000)
 
                 window.fill(black, (0, 500, 500, 200))
 
