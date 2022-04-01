@@ -1,6 +1,7 @@
 import random, pygame, sys
 from pygame.locals import *
 pygame.init()
+import time
 
 white = (255, 255, 255)
 yellow = (201, 180, 88)
@@ -54,6 +55,7 @@ def main():
     window.fill(black)
 
     guess = ''
+    # 원래라면 문자마다 분석해서 효율적인 단어쓰는 것이 일반적.
 
     print(f'current word is {word}')
 
@@ -67,28 +69,31 @@ def main():
     win = False
 
     while True:
+
         for event in pygame.event.get():
+
+            ai_guess = wordList[random.randint(0, len(wordList)-1)].upper()[:5] # 초기에는 랜덤 단어로 세팅
+            guess = ai_guess
+
             if event.type == QUIT:
                 pygame.exit()
                 sys.exit()
 
-            if event.type == pygame.KEYDOWN:
-                guess += event.unicode.upper()
+            if win == True:
+                main()
 
-                if event.key == K_RETURN and win == True:
-                    main()
+            if turns == 6:
+                main()
 
-                if event.key == K_RETURN and turns == 6:
-                    main()
+            if len(guess) > 4:
+                win = checkGuess(turns, word, guess, window)
+                turns += 1
+                if win == False:
+                    ai_guess = wordList[random.randint(0, len(wordList)-1)].upper()[:5] # 초기에는 랜z덤 단어로 세팅
+                    guess = ai_guess
+                    time.sleep(2000)
 
-                if event.key == pygame.K_BACKSPACE or len(guess) > 5:
-                    guess = guess[:-1]
-
-                if event.key == K_RETURN and len(guess) > 4:
-                    win = checkGuess(turns, word, guess, window)
-                    turns += 1
-                    guess = ''
-                    window.fill(black, (0, 500, 500, 200))
+                window.fill(black, (0, 500, 500, 200))
 
         window.fill(black, (0, 500, 500, 200))
         renderGuess = font.render(guess, True, grey)
