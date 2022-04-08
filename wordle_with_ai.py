@@ -1,7 +1,8 @@
+from operator import ge
 import random, pygame, sys
+from cv2 import CamShift
 from pygame.locals import *
 pygame.init()
-import time
 
 white = (255, 255, 255)
 yellow = (201, 180, 88)
@@ -39,29 +40,18 @@ def check_word(word, user_guess):
 
     return list
 
-def check_condi(type_list, user_word):
-    print(f'FUNC: check_condi(type_list={type_list}, user_word={user_word})')
-    
-    for word, x in enumerate(word_list):
-        for type, y in enumerate(type_list):
-            if type == grey and word[y]: # grey check
-                pass
-    exit()
-    # return_list.append(user_word)
-    # return word_list
-
 def find_correct_word(winning_word, ai_guess):
     if ai_guess == "": # 비어있으면 그냥 빈 공백 리턴
         return ""
     else:
         result = check_word(winning_word, ai_guess)
-        print(ai_guess)
+        
         if result == all_grey: # 새로운 단어 넣어줘야함
             new_word = get_random_word()
-            return find_correct_word(winning_word, new_word)
+            #return find_correct_word(winning_word, new_word)
+            return new_word
         else:
-            a = check_condi(result, ai_guess)[0]
-            print(a)
+            return winning_word
 
 
 
@@ -127,12 +117,15 @@ def main():
             ai_guess = "" # word_list에서 실제로 존재하는 단어 중 하나의 단어 가져옴.
             if not turns > 5:
                 ai_guess = get_random_word()
+
+            if winning_word == guess:
+                break
+
             guess = find_correct_word(winning_word, ai_guess)
             
             if event.type == QUIT:
                 pygame.exit()
                 sys.exit()
-
 
             if win == True: # 정답 맞출 시에 재시작하지않고 게임 종료
                 pass
