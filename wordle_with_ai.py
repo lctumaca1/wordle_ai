@@ -8,6 +8,8 @@ yellow = (201, 180, 88)
 grey = (120, 124, 126)
 black = (0, 0, 0)
 green = (106, 170, 100)
+all_green = [green, green, green, green, green]
+all_grey = [grey, grey, grey, grey, grey]
 light_green = (153, 255, 204)
 font = pygame.font.SysFont('Helvetica neue', 40)
 big_font = pygame.font.SysFont('Helvetica neue', 80)
@@ -20,9 +22,13 @@ play_again = big_font.render('Play Again?', True, light_green)
 win_word_list = []
 word_list = []
 
+def get_random_word():
+    # 실제 wordle 게임은 한 단어를 입력할때 존재하는 단어로 입력해야 다음 단어를 입력할 수가 있기 때문에 word_list에서 한 단어 가져옴.
+    return word_list[random.randint(0, len(word_list)-1)].upper()[:5]
+
 def check_word(word, user_guess):
 
-    list = [grey, grey, grey, grey, grey]
+    list = all_grey
 
     for x in range(0, 5):
         if user_guess[x] in word:
@@ -34,92 +40,35 @@ def check_word(word, user_guess):
     return list
 
 def check_condi(type_list, user_word):
-    return_list = []
-    no_letter_list = []
-    contain_letter_list = []
-    correct_letter_list = [None, None, None, None, None]
-
-    for i, type in enumerate(type_list):
-        if type == grey:
-            no_letter_list.append(user_word[i])
-        
-        if type == yellow:
-            contain_letter_list.append(user_word[i])
-
-        if type == green:
-            correct_letter_list[i] = user_word[i]
-
-    contain_letter_list = list(set(contain_letter_list))
-
-    global word_list
-
-    list1 = []
-    list2 = []
-    list3 = []
-
-    print(f'CONTAIN LETTER LIST {contain_letter_list}')
-
-    for x, word in enumerate(word_list):
-        for no_letter in no_letter_list:
-            if no_letter not in word:
-                list1.append(word)
-
-        for contain_letter in contain_letter_list:
-            all_count = len(contain_letter_list)
-            local_count = 0
-
-            if contain_letter in word.upper():
-                local_count += 1
-            
-            if all_count == local_count:
-                list2.append(word)
-        
-        for y, correct_letter in enumerate(correct_letter_list):
-            if correct_letter != None:
-                if word[y].upper() == correct_letter:
-                    list3.append(word)
-
-    set1 = set(list1)
-    set2 = set(list2)
-    set3 = set(list3)
-    print(set1 & set2 & set3)
+    print(f'FUNC: check_condi(type_list={type_list}, user_word={user_word})')
     
-
-
-
+    for word, x in enumerate(word_list):
+        for type, y in enumerate(type_list):
+            if type == grey and word[y]: # grey check
+                pass
     exit()
-
-    # for word in word_list:
-    #     if correct_letter_list != [None, None, None, None, None]:
-    #         count = 0
-    #         for x, correct_letter in enumerate(correct_letter_list):
-    #             if correct_letter == None:
-    #                 continue
-    #             else:
-    #                 if word[x] == correct_letter:
-    #                     count += 1
-    #         print(f'asdasd {count}')
-
-        
     # return_list.append(user_word)
-    return word_list
+    # return word_list
 
-def find_correct_word(word, user_guess):
-    result = check_word(word, user_guess)
-    print(user_guess)
-    if result == [grey, grey, grey, grey, grey]: # 새로운 단어 넣어줘야함
-        new_word = word_list[random.randint(0, len(word_list)-1)].upper()[:5]
-        return find_correct_word(word, new_word)
+def find_correct_word(winning_word, ai_guess):
+    if ai_guess == "": # 비어있으면 그냥 빈 공백 리턴
+        return ""
     else:
-        a = check_condi(result, user_guess)[0]
-        print(a)
+        result = check_word(winning_word, ai_guess)
+        print(ai_guess)
+        if result == all_grey: # 새로운 단어 넣어줘야함
+            new_word = get_random_word()
+            return find_correct_word(winning_word, new_word)
+        else:
+            a = check_condi(result, ai_guess)[0]
+            print(a)
 
 
 
 def check_guess(turns, word, user_guess, window):
     render_list = [None, None, None, None, None]
     spacing = 0
-    guess_colour_code = [grey ,grey, grey, grey, grey]
+    guess_colour_code = all_grey
 
     for x in range(0, 5):
         if user_guess[x] in word:
@@ -136,58 +85,66 @@ def check_guess(turns, word, user_guess, window):
         window.blit(render_list[x], (75.8 + spacing, 62 + (turns * 80)))
         spacing += 80
 
-    if guess_colour_code == [green, green, green, green, green]:
+    if guess_colour_code == all_green:
         return True
 
 # function main
 def main():
-    file = open('./wordList.txt', 'r', encoding = 'utf-8') # read word list 
-    global word_list
-    word_list = file.readlines()
-    word = word_list[random.randint(0, len(word_list)-1)].upper()
+    word_list_file = open('./wordList.txt', 'r', encoding = 'utf-8') # read word list 
+    global word_list # word_list를 전역 변수로 선언하고 이곳저곳에서 사용할 수있도록 global 사용
+    word_list = word_list_file.readlines() # word_list에 행을 기준으로 배열로 저장
+    winning_word = get_random_word() # 정답 단어 세팅.
     
-    height = 600
-    width = 500
+    window_height = 600 # pygame window height
+    window_width = 500 # pygame window width
 
-    FPS = 30
+    game_fps = 60 # game_fps 세팅
     clock = pygame.time.Clock()
 
-    window = pygame.display.set_mode((width, height))
+    window = pygame.display.set_mode((window_width, window_height))
     window.fill(black)
 
     guess = None
     # 원래라면 문자마다 분석해서 효율적인 단어쓰는 것이 일반적.
 
-    print(f'current word is {word}')
+    print(f'The winning word is {winning_word}')
 
-    for x in range(0,5):
+    # visual setting
+    for x in range(0,5): 
         for y in range(0,5):
             pygame.draw.rect(window, grey, pygame.Rect(60 + (x * 80), 50 + (y * 80), 50, 50),2)
 
-    pygame.display.set_caption('WORDLE')
+    pygame.display.set_caption('WORDLE WITH AI')
 
-    turns = 0
-    win = False
+    turns = 0 # 턴 수 (normal: 5, 5글자 단어들이기때문에 5)
+    win = False # 정답 여부
 
     while True:
-
         for event in pygame.event.get():
 
-            ai_guess = word_list[random.randint(0, len(word_list)-1)].upper()[:5] # 초기에는 랜덤 단어로 세팅
-            guess = find_correct_word(word, ai_guess)
+            # ai_guess는 초기에 랜덤한 값으로 초기화
+            # 어떤 단어가 나오는지는 처음부터 예상이 안되기때문에 힌트를 얻기위한 사전작업
+            ai_guess = "" # word_list에서 실제로 존재하는 단어 중 하나의 단어 가져옴.
+            if not turns > 5:
+                ai_guess = get_random_word()
+            guess = find_correct_word(winning_word, ai_guess)
             
             if event.type == QUIT:
                 pygame.exit()
                 sys.exit()
 
-            if win == True:
-                main()
 
-            if turns == 6:
-                main()
+            if win == True: # 정답 맞출 시에 재시작하지않고 게임 종료
+                pass
+                # main()
+
+            if turns == 6: # 6행 모두 입력 시 재시작 하지않고 pass
+                guess = "qwewqe"
+                pass
+                # main()
 
             if len(guess) > 4:
-                win = check_guess(turns, word, guess, window)
+                win = check_guess(turns, winning_word, guess, window)
                 turns += 1
 
                 window.fill(black, (0, 500, 500, 200))
@@ -204,6 +161,6 @@ def main():
             window.blit(you_lose, (90, 200))
             window.blit(play_again, (60, 300))
         pygame.display.update()
-        clock.tick(FPS)
+        clock.tick(game_fps)
 
 main()
