@@ -51,8 +51,9 @@ def find_correct_word(winning_word, ai_guess):
             #return find_correct_word(winning_word, new_word)
             return new_word
         else:
-            return winning_word
-
+            _list = []
+            
+            exit()
 
 
 def check_guess(turns, word, user_guess, window):
@@ -112,17 +113,18 @@ def main():
     while True:
         for event in pygame.event.get():
 
+            if winning_word == guess:
+                break
+            
             # ai_guess는 초기에 랜덤한 값으로 초기화
             # 어떤 단어가 나오는지는 처음부터 예상이 안되기때문에 힌트를 얻기위한 사전작업
             ai_guess = "" # word_list에서 실제로 존재하는 단어 중 하나의 단어 가져옴.
-            if not turns > 5:
+
+            if turns == 0:
                 ai_guess = get_random_word()
-
-            if winning_word == guess:
-                break
-
-            guess = find_correct_word(winning_word, ai_guess)
             
+            guess = find_correct_word(winning_word, ai_guess)
+            print(guess)
             if event.type == QUIT:
                 pygame.exit()
                 sys.exit()
@@ -130,9 +132,11 @@ def main():
             if win == True: # 정답 맞출 시에 재시작하지않고 게임 종료
                 pass
                 # main()
+                
+            print(guess)
 
             if turns == 6: # 6행 모두 입력 시 재시작 하지않고 pass
-                guess = "qwewqe"
+                guess = ""
                 pass
                 # main()
 
